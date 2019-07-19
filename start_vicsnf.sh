@@ -82,7 +82,7 @@ for key in ${!vnf_neighbor_ips[@]}
 do
 temp_neighbor_info=(${vnf_neighbor_site_routes[$key]//\#/ })
 
-if [ ${temp_neighbor_info[0]} != 'not' ]; then
+if [ "${temp_neighbor_info[0]}" != "not" ]; then
 link_cost=$(shuf -i 25-30 -n 1)
 NEIGHBOR_ARRY=$"$NEIGHBOR_ARRY\n \
  neighbor\n \
