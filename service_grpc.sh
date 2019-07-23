@@ -4,8 +4,8 @@ function start()
 {
   pid=`ps -aef | grep nfd_agent | grep -v grep | wc -l`
   if [[ $pid -eq 0 ]]; then
-	#/root/nfd_grpc/dist/nfd_agent 1> /root/nfd_agent.out 2>&1 &
-	python /root/nfd_grpc/nfd_agent.py 2>&1 &
+	#/root/nfd-grpc/dist/nfd_agent 1> /root/nfd_agent.out 2>&1 &
+	python /root/nfd-grpc/nfd_agent.py 2>&1 &
 	sleep 2
     echo -e "\033[1m== Started nfd_agent ==\033[0m"
   else
