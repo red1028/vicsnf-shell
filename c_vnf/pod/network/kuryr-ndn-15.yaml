@@ -1,0 +1,14 @@
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: kuryr-ndn-15
+  annotations:
+    openstack.org/kuryr-config: '{"subnetId": "7a3e4331-21cb-487e-9b57-c623b1399908"}'
+spec: 
+  config: '{
+    "cniVersion": "0.3.1",
+    "type": "kuryr-cni",
+    "name": "kuryr",
+    "kuryr_conf": "/etc/kuryr/kuryr.conf",
+    "debug": false
+  }'

@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: korea-hq
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.107"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-97", "namespace": "default", "ips": ["10.10.97.98"]},
+      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.199"]}
+    ]'
+spec:
+  containers:
+  - name: korea-hq
+    image: 192.168.103.250:5000/ndn_dtn_base_vnc-0.6.5:1.0
+    ## For vnc, it must be disabled
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'korea-hq'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea\\/hq'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'korea'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.97.99'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea\\/headquarter'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'YES'
+    - name: vDTN_SUPPORT
+      value: 'NO'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    - name: VNC_PW
+      value: vicsnf
+    livenessProbe:
+      tcpSocket:
+        port: 5901
+      initialDelaySeconds: 1
+      timeoutSeconds: 1
+    ### checks if http-vnc connection is working
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 6901
+        scheme: HTTP
+      initialDelaySeconds: 1
+      timeoutSeconds: 1
+    securityContext:
+      privileged: true
+      runAsUser: 0
+      #runAsGroup: 0
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; /dockerstartup/vnc_startup.sh --wait;"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-core1

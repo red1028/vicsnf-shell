@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dongjak-h
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.114"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-14",      "namespace": "default", "ips": ["10.10.14.102"]},
+      {"name": "kuryr-ndn-21",      "namespace": "default", "ips": ["10.10.21.114"]},
+      {"name": "kuryr-ndn-flat-14", "namespace": "default", "ips": ["192.168.14.102"]}
+    ]'
+spec:
+  containers:
+  - name: dongjak-h
+    image: 192.168.103.250:5000/ndn_dtn_base-0.6.5:0.9
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'dongjak_h'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea\\/seoul\\/dongjak\\/h'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'dongjak:dongjak_pf:dongjak_hu1:dongjak_hu2'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.14.101:10.10.21.113:192.168.14.103:192.168.14.104'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea\\/seoul\\/dongjak#R1:korea\\/seoul\\/dongjak\\/pf#R1:korea\\/seoul\\/dongjak\\/h\\/hu1#R1:korea\\/seoul\\/dongjak\\/h\\/hu2#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea\\/seoul\\/dongjak\\/hospital:korea\\/incidents\\/01\\/HT\\/h'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'YES'
+    - name: vDTN_SUPPORT
+      value: 'NO'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    securityContext:
+      privileged: true
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-mec1

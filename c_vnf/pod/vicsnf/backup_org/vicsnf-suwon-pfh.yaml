@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vicsnf-suwon-pfh
+  annotations:
+    default_ip: "10.10.9.117"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-17",  "ips": ["10.10.17.102"]},
+      {"name": "kuryr-ndn-flat-17", "ips": ["192.168.17.102"]}
+    ]'
+spec:
+  containers:
+  - name: vicsnf-suwon-pfh
+    image: 192.168.103.250:5000/nfd_grpc_base:1.0
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'suwon_pfh'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea\\/gyeonggi\\/suwon\\/PFH'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'suwon'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.17.101'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea\\/gyeonggi\\/suwon#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea\\/gyeonggi\\/suwon\\/police:korea\\/gyeonggi\\/suwon\\/fire:korea\\/gyeonggi\\/suwon\\/hospital'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    securityContext:
+      privileged: true
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-core1

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dongjak-pf
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.113"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-13",      "namespace": "default", "ips": ["10.10.13.102"]},
+      {"name": "kuryr-ndn-21",      "namespace": "default", "ips": ["10.10.21.113"]},
+      {"name": "kuryr-ndn-flat-13", "namespace": "default", "ips": ["192.168.13.102"]}
+    ]'
+spec:
+  containers:
+  - name: dongjak-pf
+    image: 192.168.103.250:5000/ndn_dtn_base-0.6.5:0.9
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'dongjak-pf'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea\\/seoul\\/dongjak\\/pf'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'dongjak:dongjak-h:dongjak-pu1:dongjak-pu2:dongjak-fu1:dongjak-fu2'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.13.101:10.10.21.114:192.168.13.103:192.168.13.104:192.168.13.105:192.168.13.106'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea\\/seoul\\/dongjak#R1:korea\\/seoul\\/dongjak\\/h#R1:korea\\/seoul\\/dongjak\\/pf\\/pu1#R1:korea\\/seoul\\/dongjak\\/pf\\/pu2#R1:korea\\/seoul\\/dongjak\\/pf\\/fu1#R1:korea\\/seoul\\/dongjak\\/pf\\/fu2#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea\\/seoul\\/dongjak\\/police:korea\\/seoul\\/dongjak\\/fire'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'YES'
+    - name: vDTN_SUPPORT
+      value: 'YES'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    securityContext:
+      privileged: true
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-mec1

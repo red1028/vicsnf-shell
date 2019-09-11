@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: korea
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.109"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-10", "namespace": "default", "ips": ["10.10.10.100"]},
+      {"name": "kuryr-ndn-11", "namespace": "default", "ips": ["10.10.11.100"]},
+      {"name": "kuryr-ndn-12", "namespace": "default", "ips": ["10.10.12.100"]},
+      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.199"]}
+    ]'
+spec:
+  containers:
+  - name: korea
+    image: 192.168.103.250:5000/ndn_dtn_base_vnc-0.6.5:0.9
+    #args:
+      ### make normal UI startup to connect via: oc rsh <pod-name> bash
+      #- '--tail-log'
+      ### checks that vnc server is up and running    
+    #workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'korea'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'dongjak:gangnam:suwon'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.10.101:10.10.11.101:10.10.12.101'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea\\/seoul\\/dongjak#R1:korea\\/seoul\\/gangnam#R1:korea\\/gyeonggi\\/suwon#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea:korea\\/seoul:korea\\/gyeonggi:korea\\/incidents:korea\\/incidents\\/01:korea\\/incidents\\/02'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'YES'
+    - name: vDTN_SUPPORT
+      value: 'NO'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    - name: VNC_PW
+      value: vicsnf
+    livenessProbe:
+      tcpSocket:
+        port: 5901
+      initialDelaySeconds: 1
+      timeoutSeconds: 1
+    ### checks if http-vnc connection is working
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 6901
+        scheme: HTTP
+      initialDelaySeconds: 1
+      timeoutSeconds: 1
+    securityContext:
+      privileged: true
+      runAsUser: 0
+      #runAsGroup: 0
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; /dockerstartup/vnc_startup.sh --wait;"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-core1

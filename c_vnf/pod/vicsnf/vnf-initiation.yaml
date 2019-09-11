@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vnf-initiation
+  namespace: vicsnet
+  annotations:
+    # Multi Interface setting part - start
+    #v1.multus-cni.io/default-network: default/flannel-master
+    #k8s.v1.cni.cncf.io/networks: default/flannel-master
+    # Multi Interface setting part - start
+    default_ip: "10.10.9.220"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-97", "namespace": "default", "ips": ["10.10.97.220"]},
+      {"name": "kuryr-ndn-98", "namespace": "default", "ips": ["10.10.98.220"]},
+      {"name": "kuryr-ndn-99", "namespace": "default", "ips": ["10.10.99.220"]}
+    ]'
+    # Multi Interface setting part - end
+spec:
+  containers:
+  - name: vnf-initiation
+    image: 192.168.103.250:5000/ndn_dtn_base-0.6.5:0.9
+    ## For vnc, it must be disabled
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'vnf_initiation'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'vnf_initiation'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'vnf_initiation_sub_1'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.99.254'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'vnf_initiation\\/sub_1#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'vnf_initiation:vnf_initiation\\/incidents'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'NO'
+    - name: vDTN_SUPPORT
+      value: 'NO'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    securityContext:
+      privileged: true
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d;"]
+    #command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d;"]    
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-core1

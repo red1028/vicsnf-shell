@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gangnam-pf
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.115"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-15",      "namespace": "default", "ips": ["10.10.15.102"]},
+      {"name": "kuryr-ndn-22",      "namespace": "default", "ips": ["10.10.22.115"]},
+      {"name": "kuryr-ndn-flat-15", "namespace": "default", "ips": ["192.168.15.102"]}
+    ]'
+spec:
+  containers:
+  - name: gangnam-pf
+    image: 192.168.103.250:5000/ndn_dtn_base-0.6.5:0.9
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'gangnam-pf'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea\\/seoul\\/gangnam\\/pf'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'gangnam:gangnam-h:gangnam-pu1:gangnam-pu2:gangnam-fu1:gangnam-fu2'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.15.101:10.10.22.116:192.168.15.103:192.168.15.104:192.168.15.105:192.168.15.106'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea\\/seoul\\/gangnam#R1:korea\\/seoul\\/gangnam\\/h#R1:korea\\/seoul\\/gangnam\\/pf\\/pu1#R1:korea\\/seoul\\/gangnam\\/pf\\/pu2#R1:korea\\/seoul\\/gangnam\\/pf\\/fu1#R1:korea\\/seoul\\/gangnam\\/pf\\/fu2#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea\\/seoul\\/gangnam\\/police:korea\\/seoul\\/gangnam\\/fire:korea\\/incidents\\/01\\/PT\\/p:korea\\/incidents\\/01\\/FT\\/f'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'YES'
+    - name: vDTN_SUPPORT
+      value: 'YES'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    securityContext:
+      privileged: true
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-mec2

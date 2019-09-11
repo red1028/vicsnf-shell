@@ -1,0 +1,24 @@
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: macvlan-master
+spec:
+  config: '{
+    "type": "macvlan",
+    "master": "enp175s0f0",
+    "mode": "bridge",
+    # "mode": "passthru",
+    "ipam": {
+        "type": "host-local",
+        "subnet": "10.57.217.0/24",
+        "rangeStart": "10.57.217.11",
+        "rangeEnd": "10.57.217.100",
+        "routes": [
+                { "dst": "0.0.0.0/0" }
+        ],
+        "gateway": "10.57.217.1"
+    },
+    "delegate": {
+      "isDefaultGateway": false
+    }
+  }'

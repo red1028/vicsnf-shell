@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seongnam-pfh
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.118"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "kuryr-ndn-17",      "namespace": "default", "ips": ["10.10.17.102"]},
+      {"name": "kuryr-ndn-flat-17", "namespace": "default", "ips": ["192.168.17.102"]}
+    ]'
+spec:
+  containers:
+  - name: seongnam-pfh
+    image: 192.168.103.250:5000/ndn_dtn_base-0.6.5:0.9
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    - name: vICSNF_ALIAS
+      value: 'seongnam-pfh'
+    - name: vICSNF_MGMTIP
+      value: '127.0.0.1'
+    - name: vICSNF_MGMTPORT
+      value: '50051'
+    - name: vICSNF_SITENAME
+      value: 'korea\\/gyeonggi\\/seongnam\\/pfh'
+    - name: vICSNF_ROUTERNAME
+      value: 'R1'
+    - name: vICSNF_NEIGHBOR_HOSTNAME
+      value: 'seongnam:seongnam-pu1:seongnam-pu2:seongnam-fu1:seongnam-fu2:seongnam-hu1:seongnam-hu2'
+    - name: vICSNF_NEIGHBOR_IP
+      value: '10.10.17.101:192.168.17.103:192.168.17.104:192.168.17.105:192.168.17.106:192.168.17.107:192.168.17.108'
+    - name: vICSNF_NEIGHBOR_SITE_ROUTE
+      # SITE_NAME#ROUTE_NAME:N:N
+      value: 'korea\\/gyeonggi\\/seongnam#R1:korea\\/gyeonggi\\/seongnam\\/p\\/pu1#R1:korea\\/gyeonggi\\/seongnam\\/p\\/pu2#R1:korea\\/gyeonggi\\/seongnam\\/f\\/fu1#R1:korea\\/gyeonggi\\/seongnam\\/f\\/fu2#R1:korea\\/gyeonggi\\/seongnam\\/h\\/hu1#R1:korea\\/gyeonggi\\/seongnam\\/h\\/hu2#R1'
+    - name: vICSNF_AD_PREFIXE
+      value: 'korea\\/gyeonggi\\/seongnam\\/police:korea\\/gyeonggi\\/seongnam\\/fire:korea\\/gyeonggi\\/seongnam\\/hospital'
+    - name: vICSNF_ENV_CHANGE
+      value: 'NO'
+    - name: vICSNF_IS_START
+      value: 'YES'
+    - name: vDTN_SUPPORT
+      value: 'YES'
+    - name: vCONVERGENCE_INTERFACES
+      value: 'lan0'
+    - name: vCONVERGENCE_LAYER
+      value: 'tcp#eth1'
+    - name: vDTN_DEFAULT_PREFIX
+      value: '\\/nfd'
+    securityContext:
+      privileged: true
+    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d"]
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-mec1

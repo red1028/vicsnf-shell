@@ -1,0 +1,6 @@
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: sub-i2nsf-100
+  annotations:
+    openstack.org/kuryr-config: '{"subnetId": "7742a5a9-039f-4862-aaeb-ac3b24a04700"}'

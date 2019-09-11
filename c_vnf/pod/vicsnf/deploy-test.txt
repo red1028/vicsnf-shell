@@ -1,0 +1,386 @@
+# route print -4
+# route add -p 192.168.13.0 mask 255.255.255.0 192.168.100.1 IF 10
+# route add -p 192.168.14.0 mask 255.255.255.0 192.168.100.1 IF 10
+# route add -p 192.168.15.0 mask 255.255.255.0 192.168.100.1 IF 10
+# route add -p 192.168.16.0 mask 255.255.255.0 192.168.100.1 IF 10
+
+## get vICSNF Pod
+kubectl -n vicsnet get pod
+
+## korea vICSNF delete
+kubectl -n vicsnet delete pod korea korea-hq
+kubectl -n vicsnet delete pod seoul gyeonggi
+
+## dongjak vICSNF delete
+kubectl -n vicsnet delete pod dongjak dongjak-pf dongjak-h
+kubectl -n vicsnet delete pod dongjak-pu1 dongjak-pu2
+kubectl -n vicsnet delete pod dongjak-fu1 dongjak-fu2
+kubectl -n vicsnet delete pod dongjak-hu1 dongjak-hu2
+
+## gangnam vICSNF delete
+kubectl -n vicsnet delete pod gangnam gangnam-pf gangnam-h
+kubectl -n vicsnet delete pod gangnam-pu1 gangnam-pu2
+kubectl -n vicsnet delete pod gangnam-fu1 gangnam-fu2
+kubectl -n vicsnet delete pod gangnam-hu1 gangnam-hu2
+
+## seongnam vICSNF delete
+kubectl -n vicsnet delete pod seongnam seongnam-pfh
+kubectl -n vicsnet delete pod seongnam-pu1 seongnam-pu2
+kubectl -n vicsnet delete pod seongnam-fu1 seongnam-fu2
+kubectl -n vicsnet delete pod seongnam-hu1 seongnam-hu2
+
+
+## Root of vICSNF create
+kubectl create -f ~/pod/vicsnf/korea.yaml -f ~/pod/vicsnf/korea-hq.yaml
+kubectl create -f ~/pod/vicsnf/seoul.yaml -f ~/pod/vicsnf/gyeonggi.yaml
+
+## Dongjak vICSNF create
+kubectl create -f ~/pod/vicsnf/dongjak.yaml -f ~/pod/vicsnf/dongjak-pf.yaml -f ~/pod/vicsnf/dongjak-h.yaml
+kubectl create -f ~/pod/vicsnf/dongjak-pu1.yaml -f ~/pod/vicsnf/dongjak-pu2.yaml
+kubectl create -f ~/pod/vicsnf/dongjak-fu1.yaml -f ~/pod/vicsnf/dongjak-fu2.yaml
+kubectl create -f ~/pod/vicsnf/dongjak-hu1.yaml -f ~/pod/vicsnf/dongjak-hu2.yaml
+
+## Gangnam vICSNF create
+kubectl create -f ~/pod/vicsnf/gangnam.yaml -f ~/pod/vicsnf/gangnam-pf.yaml -f ~/pod/vicsnf/gangnam-h.yaml
+kubectl create -f ~/pod/vicsnf/gangnam-pu1.yaml -f ~/pod/vicsnf/gangnam-pu2.yaml
+kubectl create -f ~/pod/vicsnf/gangnam-fu1.yaml -f ~/pod/vicsnf/gangnam-fu2.yaml
+kubectl create -f ~/pod/vicsnf/gangnam-hu1.yaml -f ~/pod/vicsnf/gangnam-hu2.yaml
+
+
+## seongnam vICSNF create
+kubectl create -f ~/pod/vicsnf/seongnam.yaml -f ~/pod/vicsnf/seongnam-pfh.yaml
+kubectl create -f ~/pod/vicsnf/seongnam-pu1.yaml -f ~/pod/vicsnf/seongnam-pu2.yaml
+kubectl create -f ~/pod/vicsnf/seongnam-fu1.yaml -f ~/pod/vicsnf/seongnam-fu2.yaml
+kubectl create -f ~/pod/vicsnf/seongnam-hu1.yaml -f ~/pod/vicsnf/seongnam-hu2.yaml
+
+########################################
+## configuration for topology of vICSNF (topdown approach)
+########################################
+## kubectl -n vicsnet exec -it gangnam-pu1 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it gangnam-pu2 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it gangnam-fu1 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it gangnam-fu2 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it gangnam-hu1 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it gangnam-hu2 ./start_vicsnf.sh add_tcp
+## 
+## kubectl -n vicsnet exec -it dongjak-pu1 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-pu2 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-fu1 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-fu2 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-hu1 ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-hu2 ./start_vicsnf.sh add_tcp
+## 
+## kubectl -n vicsnet exec -it gangnam-pf ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it gangnam-h  ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-pf ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak-h  ./start_vicsnf.sh add_tcp
+## 
+## kubectl -n vicsnet exec -it gangnam    ./start_vicsnf.sh add_tcp
+## kubectl -n vicsnet exec -it dongjak    ./start_vicsnf.sh add_tcp
+## 
+## kubectl -n vicsnet exec -it korea      ./start_vicsnf.sh add_tcp
+
+kubectl -n vicsnet exec -it korea -- bash -c 'nfdc face create remote tcp4://dongjak persistency permanent'
+kubectl -n vicsnet exec -it korea -- bash -c 'nfdc face create remote tcp4://gangnam persistency permanent'
+
+kubectl -n vicsnet exec -it dongjak -- bash -c 'nfdc face create remote tcp4://gangnam persistency permanent'
+kubectl -n vicsnet exec -it dongjak -- bash -c 'nfdc face create remote tcp4://dongjak_pf persistency permanent'
+kubectl -n vicsnet exec -it dongjak -- bash -c 'nfdc face create remote tcp4://dongjak_h persistency permanent'
+
+kubectl -n vicsnet exec -it dongjak-pf -- bash -c 'nfdc face create remote tcp4://dongjak_pu1 persistency permanent'
+kubectl -n vicsnet exec -it dongjak-pf -- bash -c 'nfdc face create remote tcp4://dongjak_pu2 persistency permanent'
+kubectl -n vicsnet exec -it dongjak-pf -- bash -c 'nfdc face create remote tcp4://dongjak_fu1 persistency permanent'
+kubectl -n vicsnet exec -it dongjak-pf -- bash -c 'nfdc face create remote tcp4://dongjak_fu2 persistency permanent'
+kubectl -n vicsnet exec -it dongjak-h -- bash -c 'nfdc face create remote tcp4://dongjak_hu1 persistency permanent'
+kubectl -n vicsnet exec -it dongjak-h -- bash -c 'nfdc face create remote tcp4://dongjak_hu2 persistency permanent'
+
+kubectl -n vicsnet exec -it gangnam -- bash -c 'nfdc face create remote tcp4://gangnam_pf persistency permanent'
+kubectl -n vicsnet exec -it gangnam -- bash -c 'nfdc face create remote tcp4://gangnam_h persistency permanent'
+kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam_pu1 persistency permanent'
+kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam_pu2 persistency permanent'
+kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam_fu1 persistency permanent'
+kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam_fu2 persistency permanent'
+kubectl -n vicsnet exec -it gangnam-h -- bash -c 'nfdc face create remote tcp4://gangnam_hu1 persistency permanent'
+kubectl -n vicsnet exec -it gangnam-h -- bash -c 'nfdc face create remote tcp4://gangnam_hu2 persistency permanent'
+
+
+
+########################################
+## configuration for default test
+########################################
+###########
+## 01
+###########
+kubectl exec -it dongjak-pf bash
+scp 192.168.103.250:/root/pod/vicsnf/start_vicsnf.sh /root
+/root/start_vicsnf.sh 
+nfdc face list | grep 192.168.13
+### add unicast route
+nfdc route add prefix /ndn/korea/seoul/dongjak/police/unit1 nexthop udp4://192.168.13.103
+nfdc route add prefix /ndn/korea/seoul/dongjak/police/unit2 nexthop udp4://192.168.13.104
+nfdc route add prefix /ndn/korea/seoul/dongjak/fire/unit1 nexthop udp4://192.168.13.105
+nfdc route add prefix /ndn/korea/seoul/dongjak/fire/unit2 nexthop udp4://192.168.13.106
+  
+### add multicast route
+nfdc strategy set prefix /ndn/korea/seoul/dongjak/police/ng strategy /localhost/nfd/strategy/multicast
+nfdc strategy set prefix /ndn/korea/seoul/dongjak/fire/ng strategy /localhost/nfd/strategy/multicast
+nfdc route add prefix /ndn/korea/seoul/dongjak/police/ng nexthop udp4://192.168.13.103
+nfdc route add prefix /ndn/korea/seoul/dongjak/police/ng nexthop udp4://192.168.13.104
+nfdc route add prefix /ndn/korea/seoul/dongjak/fire/ng nexthop udp4://192.168.13.105
+nfdc route add prefix /ndn/korea/seoul/dongjak/fire/ng nexthop udp4://192.168.13.106
+
+###########
+## 02
+###########
+kubectl exec -it dongjak-h bash
+scp 192.168.103.250:/root/pod/vicsnf/start_vicsnf.sh /root
+/root/start_vicsnf.sh 
+nfdc face list | grep 192.168.14
+### add unicast route
+nfdc route add prefix /ndn/korea/seoul/dongjak/hospital/unit1 nexthop udp4://192.168.14.103
+nfdc route add prefix /ndn/korea/seoul/dongjak/hospital/unit2 nexthop udp4://192.168.14.104
+  
+### add multicast route
+nfdc strategy set prefix /ndn/korea/incidents/01/HT/h strategy /localhost/nfd/strategy/multicast
+nfdc route add prefix /ndn/korea/incidents/01/HT/h/G1 nexthop udp4://192.168.14.103
+nfdc route add prefix /ndn/korea/incidents/01/HT/h/G1 nexthop udp4://192.168.14.104
+
+###########
+## 03
+###########
+kubectl exec -it gangnam-pf bash
+scp 192.168.103.250:/root/pod/vicsnf/start_vicsnf.sh /root
+/root/start_vicsnf.sh 
+nfdc face list | grep 192.168.15
+### add unicast route
+nfdc route add prefix /ndn/korea/seoul/gangnam/police/unit1 nexthop udp4://192.168.15.103
+nfdc route add prefix /ndn/korea/seoul/gangnam/police/unit2 nexthop udp4://192.168.15.104
+nfdc route add prefix /ndn/korea/seoul/gangnam/fire/unit1 nexthop udp4://192.168.15.105
+nfdc route add prefix /ndn/korea/seoul/gangnam/fire/unit2 nexthop udp4://192.168.15.106
+  
+### add multicast route
+nfdc strategy set prefix /ndn/korea/incidents/01/PT/p/G1 strategy /localhost/nfd/strategy/multicast
+nfdc strategy set prefix /ndn/korea/incidents/01/FT/f/G1 strategy /localhost/nfd/strategy/multicast
+nfdc route add prefix /ndn/korea/incidents/01/PT/p/G1 nexthop udp4://192.168.15.103
+nfdc route add prefix /ndn/korea/incidents/01/PT/p/G1 nexthop udp4://192.168.15.104
+nfdc route add prefix /ndn/korea/incidents/01/FT/f/G1 nexthop udp4://192.168.15.105
+nfdc route add prefix /ndn/korea/incidents/01/FT/f/G1 nexthop udp4://192.168.15.106
+
+###########
+## 04
+###########
+kubectl exec -it gangnam-h bash
+scp 192.168.103.250:/root/pod/vicsnf/start_vicsnf.sh /root
+/root/start_vicsnf.sh 
+nfdc face list | grep 192.168.16
+### add unicast route
+nfdc route add prefix /ndn/korea/seoul/gangnam/hospital/unit1 nexthop udp4://192.168.16.103
+nfdc route add prefix /ndn/korea/seoul/gangnam/hospital/unit2 nexthop udp4://192.168.16.104
+  
+
+
+
+
+########################################
+## test 01 (default test)
+########################################
+kubectl exec -it dongjak-pu1 bash
+nfd-start
+nfdc face list | grep 192.168
+nfdc face create remote udp4://192.168.13.102
+ndnpingserver /ndn/korea/seoul/dongjak/police/unit1
+ndnpingserver /ndn/korea/seoul/dongjak/police/ng/unit1
+
+kubectl exec -it dongjak-pu2 bash
+nfdc face list | grep 192.168
+nfdc face create remote udp4://192.168.13.102
+ndnpingserver /ndn/korea/seoul/dongjak/police/unit2
+ndnpingserver /ndn/korea/seoul/dongjak/police/ng/unit1
+
+
+
+kubectl exec -it dongjak bash
+ndnping /ndn/korea/seoul/dongjak/police/unit1
+ndnping /ndn/korea/seoul/dongjak/police/unit2
+ndnping /ndn/korea/seoul/dongjak/police/ng/unit1
+
+
+########################################
+## test 01 (disaster test)
+########################################
+kubectl exec -it dongjak-hu1 bash
+nfd-start
+nfdc face list | grep 192.168
+nfdc face create remote udp4://192.168.14.102
+ndnpingserver /ndn/korea/incidents/01/HT/h/G1
+
+kubectl exec -it dongjak-hu2 bash
+nfd-start
+nfdc face list | grep 192.168
+nfdc face create remote udp4://192.168.14.102
+ndnpingserver /ndn/korea/incidents/01/HT/h/G1
+
+
+kubectl exec -it dongjak bash
+ndnping /ndn/korea/seoul/dongjak/police/unit1
+ndnping /ndn/korea/seoul/dongjak/police/unit2
+ndnping /ndn/korea/incidents/01/HT/h/G1
+
+
+
+
+
+
+kubectl exec -it dongjak-h bash
+kubectl exec -it dongjak-pu1 bash
+  --> nfdc face create remote udp4://192.168.13.102 reliability on
+  --> ndnpingserver /ndn/korea/seoul/dongjak/police/unit1
+  --> ndnpingserver /ndn/korea/seoul/dongjak/police/ng/unit1
+kubectl exec -it dongjak-pu2 bash
+  --> nfdc face create remote udp4://192.168.13.102 reliability on
+  --> ndnpingserver /ndn/korea/seoul/dongjak/police/unit2
+  --> ndnpingserver /ndn/korea/seoul/dongjak/police/ng/unit1
+
+
+kubectl exec -it dongjak-fu1 bash
+  --> nfdc face create remote udp4://192.168.13.102 reliability on
+  --> ndnpingserver /ndn/korea/seoul/dongjak/fire/unit1
+  --> ndnpingserver /ndn/korea/seoul/dongjak/fire/ng/unit1
+kubectl exec -it dongjak-fu2 bash
+  --> nfdc face create remote udp4://192.168.13.102 reliability on
+  --> ndnpingserver /ndn/korea/seoul/dongjak/fire/unit2
+  --> ndnpingserver /ndn/korea/seoul/dongjak/fire/ng/unit1
+
+
+
+kubectl exec -it dongjak bash
+  --> ndnping /ndn/korea/seoul/dongjak/police/ng/unit1
+  
+
+
+
+
+
+
+
+
+
+docker rmi -f 192.168.103.250:5000/nfd_grpc_base:1.1
+docker rmi -f nfd_grpc_base:1.1; docker commit nfd_grpc_base nfd_grpc_base:1.1; docker images
+docker tag nfd_grpc_base:1.1 192.168.103.250:5000/nfd_grpc_base:1.1
+docker push 192.168.103.250:5000/nfd_grpc_base:1.1
+
+
+
+
+
+docker run --name nfd_grpc_base --privileged -p 2222:22 -itd nfd_grpc_base:1.0
+
+
+
+
+export KUBERNETES_MASTER=http://192.168.103.250:8080
+
+curl -L https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n') > weave-net.yaml
+curl -L https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n') > weave.yaml
+vi weave.yaml
+          containers:
+		  ...
+          nodeSelector:
+            kubernetes.io/hostname: vicsnet-edge1
+
+
+kubectl create -f ~/pod/network/weave.yaml
+kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 4040
+
+or 
+
+pod=$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')
+pod_ip=$(kubectl get pod $pod -n weave -o jsonpath='{.status.podIP}')
+pod_ip=192.168.103.230
+kubectl expose pod $pod -n weave --external-ip="$pod_ip" --port=4040 --target-port=4040
+echo http://$pod_ip:4040
+
+
+
+
+
+
+
+
+pod=$(kubectl get pod -n weave --selector=name=weave-scope-app -o jsonpath={.items..metadata.name})
+kubectl expose pod $pod -n weave --external-ip="192.168.103.250" --port=4040 --target-port=4040
+
+
+
+https://2886795313-4040-frugo04.environments.katacoda.com
+https://3232262138-4040-frugo04.environments.katacoda.com
+
+
+## working in dongjak-pk
+nfdc face create udp://192.168.13.234
+nfdc route add prefix /ndn/korea/seoul/dongjak/police/unit1 nexthop udp://192.168.13.234
+
+
+nfdc face create udp://192.168.13.134
+nfdc route add prefix /ndn/korea/seoul/dongjak/police/unit2 nexthop udp://192.168.13.134
+
+
+## working in dongjak-pu1
+nfd-stop; sleep 3; nfd-start
+nfdc face create udp://192.168.13.102
+nfdc route add prefix /ndn/korea/seoul/dongjak/police nexthop udp://192.168.13.102
+ndnpingserver /ndn/korea/seoul/dongjak/police/unit1
+
+
+## working in dongjak-pu2
+nfd-stop; sleep 3; nfd-start
+nfdc face create udp://192.168.13.102
+ndnpingserver /ndn/korea/seoul/dongjak/police/unit1
+
+
+
+#################################################################################
+## ykpark_nfd_R1
+nfdc face create udp4://172.20.0.202
+nfdc route add prefix / nexthop udp4://172.20.0.202
+nfdc route add prefix /localhop/nfd nexthop udp4://172.20.0.202
+
+## ykpark_nfd_R2
+nfdc face create udp4://172.20.0.201
+nfdc route add prefix / nexthop udp4://172.20.0.201
+nfdc route add prefix /localhop/nfd nexthop udp4://172.20.0.201
+
+
+
+
+nfdc route add prefix /localhop/nfd/rib nexthop udp://172.18.0.201
+
+
+ndn-autoconfig-server -p /ndn/ykpark/hub udp4://172.18.0.200
+ndnpingserver /ndn/ykpark/hub/test
+
+## ykpark_nfd_R2
+nfdc face create udp4://172.18.0.200
+ndn-autoconfig
+
+nfdc route add prefix /ndn/korea/seoul/gangnam/ykpark nexthop udp://172.20.0.201
+
+nfdc route add prefix /localhop/nfd/rib nexthop udp://172.18.0.200
+
+
+
+## ykpark_nfd_R3
+nfdc face create udp4://172.21.0.202
+
+
+
+curl -L -o test_register_route.py https://raw.githubusercontent.com/named-data/PyNDN2/master/examples/test_register_route.py
+curl -L -o chatbuf.proto https://raw.githubusercontent.com/named-data/PyNDN2/master/examples/chatbuf.proto
+curl -L -o control-parameters.proto https://raw.githubusercontent.com/named-data/PyNDN2/master/examples/control-parameters.proto
+curl -L -o face-status.proto https://raw.githubusercontent.com/named-data/PyNDN2/master/examples/face-status.proto
+curl -L -o face-query-filter.proto https://raw.githubusercontent.com/named-data/PyNDN2/master/examples/face-query-filter.proto
+
+protoc --python_out=. *.proto
+
+
