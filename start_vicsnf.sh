@@ -43,6 +43,8 @@ function env_to_file()
      env vICSNF_IS_START='YES' 
   fi
   echo "IS_START=$vICSNF_IS_START" >> /root/$1
+
+  echo "IS_VM=$vICSNF_IS_VM" >> /root/$1
 }
 
 function apply_to_ndn()
@@ -63,7 +65,12 @@ vnf_advertising_prefixes=(${AD_PREFIXE//:/ })
 #echo "## Change hosts"
 #echo "#####################################################${normal}"
 test -f /etc/hosts.org || cp /etc/hosts /etc/hosts.org
-echo "$(hostname -i) $(hostname)" > /etc/hosts
+if [ "$IS_VM" == "YES" ]; then
+  echo "$(ip route get 8.8.8.8 | awk '{print $NF; exit}') $(hostname)" > /etc/hosts
+else
+  echo "$(hostname -i) $(hostname)" > /etc/hosts
+fi
+
 for key in ${!vnf_neighbor_ips[@]}
 do
   echo "${vnf_neighbor_ips[$key]} ${vnf_neighbor_hostnames[$key]}" >> /etc/hosts
