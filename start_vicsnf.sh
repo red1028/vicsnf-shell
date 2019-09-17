@@ -237,7 +237,7 @@ function stop_dtnd()
 
 env_name=''
 
-if [[ $vICSNF_ENV_CHANGE == 'YES' ]]; then
+if [[ $ENV_CHANGE == 'YES' ]]; then
   env_name='env_change'
   env_to_file $env_name
 elif [[ -e '/root/env_next' ]]; then
@@ -249,6 +249,8 @@ else
   env_to_file $env_name
 fi
 
+source $env_name
+
 if [ "$1" == 'add_tcp' ]; then
   add_tcp_face $env_name
 else
@@ -256,13 +258,13 @@ else
   apply_to_ndn $env_name
   stop_dtnd; stop_nlsr; stop_nfd; stop_grpc_agent
  
-  if [ $vDTN_SUPPORT  == 'YES' ]; then
+  if [ $DTN_SUPPORT  == 'YES' ]; then
 	apply_to_dtn $env_name
 	start_dtnd;
   fi
 
   start_nfd
-  if [ $vICSNF_IS_START == 'YES' ]; then
+  if [ $IS_START == 'YES' ]; then
       start_nlsr; start_grpc_agent
   fi
   add_udp_face $env_name
