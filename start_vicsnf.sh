@@ -44,6 +44,11 @@ function env_to_file()
   fi
   echo "IS_START=$vICSNF_IS_START" >> /root/$1
 
+  if [ -z "$vNLSR_LIFETIME" ]; then
+     env vNLSR_LIFETIME='60000' 
+  fi
+  echo "NLSR_LIFETIME=$vNLSR_LIFETIME" >> /root/$1
+
   echo "IS_VM=$vICSNF_IS_VM" >> /root/$1
 }
 
@@ -113,6 +118,7 @@ done
 
 sed -i "s/\%neighbor_arry\%/$NEIGHBOR_ARRY/" $filename
 sed -i "s/\%prefix_array\%/$PREFIX_ARRAY/" $filename
+sed -i "s/60000/$NLSR_LIFETIME/" $filename
 
 cp $filename $LOCAL_ETC_PATH/ndn/nlsr.conf
 
