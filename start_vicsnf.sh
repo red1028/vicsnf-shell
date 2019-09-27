@@ -45,9 +45,22 @@ function env_to_file()
   echo "IS_START=$vICSNF_IS_START" >> /root/$1
 
   if [ -z "$vNLSR_LIFETIME" ]; then
-     env vNLSR_LIFETIME='60000' 
+     # milliseconds
+     env vNLSR_LIFETIME='60000'
   fi
   echo "NLSR_LIFETIME=$vNLSR_LIFETIME" >> /root/$1
+
+  if [ -z "$vNLSR_HELLOTIME" ]; then
+     # seconds
+     env vNLSR_HELLOTIME='60'
+  fi
+  echo "NLSR_HELLOTIME=$vNLSR_HELLOTIME" >> /root/$1
+
+  if [ -z "$vNLSR_FIRST_HELLOTIME" ]; then
+     # seconds
+     env vNLSR_FIRST_HELLOTIME='10'
+  fi
+  echo "NLSR_FIRST_HELLOTIME=$vNLSR_FIRST_HELLOTIME" >> /root/$1
 
   echo "IS_VM=$vICSNF_IS_VM" >> /root/$1
 }
@@ -118,7 +131,9 @@ done
 
 sed -i "s/\%neighbor_arry\%/$NEIGHBOR_ARRY/" $filename
 sed -i "s/\%prefix_array\%/$PREFIX_ARRAY/" $filename
-sed -i "s/60000/$NLSR_LIFETIME/" $filename
+sed -i "s/\%sync_interest_lifetime%\/$NLSR_LIFETIME/" $filename
+sed -i "s/\%hello_interval%\/$NLSR_HELLOTIME/" $filename
+sed -i "s/\%first_hello_interval%\/$NLSR_FIRST_HELLOTIME/" $filename
 
 cp $filename $LOCAL_ETC_PATH/ndn/nlsr.conf
 
