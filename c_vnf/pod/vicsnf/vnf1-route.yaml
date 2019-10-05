@@ -1,43 +1,50 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: gangnam
+  name: vnf1-route
   namespace: vicsnet
   annotations:
-    default_ip: "10.10.9.111"
+    # Multi Interface setting part - start
+    v1.multus-cni.io/default-network: default/flannel-master
     k8s.v1.cni.cncf.io/networks: '[
-      {"name": "kuryr-ndn-11", "namespace": "default", "ips": ["10.10.11.101"]},
-      {"name": "kuryr-ndn-20", "namespace": "default", "ips": ["10.10.20.111"]},
-      {"name": "kuryr-ndn-15", "namespace": "default", "ips": ["10.10.15.101"]},
-      {"name": "kuryr-ndn-16", "namespace": "default", "ips": ["10.10.16.101"]}
+      {"name": "flannel-master", "namespace": "default", "interface": "eth1", "ips": "10.244.6.102"}
     ]'
+    ## Multi Interface setting part - start
+    #default_ip: "10.10.9.220"
+    #k8s.v1.cni.cncf.io/networks: '[
+    #  {"name": "kuryr-ndn-97", "namespace": "default", "ips": ["10.10.97.220"]},
+    #  {"name": "kuryr-ndn-98", "namespace": "default", "ips": ["10.10.98.220"]},
+    #  {"name": "kuryr-ndn-99", "namespace": "default", "ips": ["10.10.99.220"]}
+    #]'
+    ## Multi Interface setting part - end
 spec:
   containers:
-  - name: gangnam
+  - name: vnf1-route
     image: 192.168.103.250:5000/icn-dtn-base-0.6.5:1.0
+    ## For vnc, it must be disabled
     workingDir: /root
     env:
     - name: LC_ALL
       value: C.UTF-8
     - name: vICSNF_ALIAS
-      value: 'gangnam'
+      value: 'vnf1-route'
     - name: vICSNF_MGMTIP
       value: '127.10.10.1'
     - name: vICSNF_MGMTPORT
       value: '50051'
     - name: vICSNF_SITENAME
-      value: 'korea\\/seoul\\/gangnam'
+      value: 'vnf1_route'
     - name: vICSNF_ROUTERNAME
       value: 'R1'
     - name: vICSNF_NEIGHBOR_HOSTNAME
-      value: 'seoul:dongjak:gangnam-pf:gangnam-h'
+      value: 'vnf2-route'
     - name: vICSNF_NEIGHBOR_IP
-      value: '10.10.11.100:10.10.20.10:10.10.15.102:10.10.16.102'
+      value: '10.244.6.103'
     - name: vICSNF_NEIGHBOR_SITE_ROUTE
       # SITE_NAME#ROUTE_NAME:N:N
-      value: 'korea\\/seoul#R1:korea\\/seoul\\/dongjak#R1:korea\\/seoul\\/gangnam\\/pf#R1:korea\\/seoul\\/gangnam\\/h#R1'
+      value: 'vnf2_route#R1'
     - name: vICSNF_AD_PREFIXE
-      value: 'korea\\/seoul\\/gangnam:korea\\/incidents\\/01\\/PT:korea\\/incidents\\/01\\/FT'
+      value: 'route1:route1\\/test'
     - name: vNLSR_LIFETIME
       value: '60000'
     - name: vNLSR_HELLOTIME
@@ -47,7 +54,7 @@ spec:
     - name: vICSNF_ENV_CHANGE
       value: 'NO'
     - name: vICSNF_IS_START
-      value: 'YES'
+      value: 'NO'
     - name: vDTN_SUPPORT
       value: 'NO'
     - name: vCONVERGENCE_INTERFACES
@@ -58,6 +65,7 @@ spec:
       value: '\\/nfd'
     securityContext:
       privileged: true
-    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d"]
+    #command: ["/bin/bash", "-c", "sleep 1d;"]
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d;"]  
   nodeSelector:
-    kubernetes.io/hostname: vicsnet-edge2
+    kubernetes.io/hostname: vicsnet-core2

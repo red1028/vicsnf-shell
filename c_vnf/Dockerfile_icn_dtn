@@ -134,8 +134,7 @@ FROM ubuntu:16.04
 RUN sed -i 's/archive.ubuntu.com/ftp.daumkakao.com/g' /etc/apt/sources.list
 RUN sed -i 's/security.ubuntu.com/ftp.daumkakao.com/g' /etc/apt/sources.list
 
-RUN apt-get update -y 
-## && apt-get dist-upgrade -y
+RUN apt-get update -y && apt-get dist-upgrade -y
 RUN apt-get install -y git vim iputils-ping net-tools iproute2 openssh-server \
       devscripts build-essential libtool cdbs pkg-config debhelper autotools-dev \
       libnl-3-dev libnl-genl-3-dev libnl-route-3-dev libnl-nf-3-dev libnl-cli-3-dev libssl-dev \
@@ -265,6 +264,17 @@ RUN cp *.sh /root
 RUN cp ibrdtnd_default.conf /usr/local/etc
 RUN cp nfd_default.conf /usr/local/etc/ndn
 RUN cp nlsr_default.conf /usr/local/etc/ndn
+
+
+############
+# 04. pyndn client
+############
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:kivy-team/kivy
+RUN apt-get install -y python-kivy libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
+RUN easy_install requests
+RUN git clone https://github.com/pearltran/py_chronochat_ui.git /root/py_chronochat_ui
+
 
 WORKDIR /
 

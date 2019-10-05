@@ -6,9 +6,9 @@ normal=$(tput sgr0)
 ####################################
 ## input container name and version...
 ####################################
-read -p "${bold}Enter the base name of icn+dtn image(ndn-dtn-base[default]) :${normal}" image_name
-read -p "${bold}Enter the version of icn+dtn (0.6.5[default]) :${normal}" ndn_version
-read -p "${bold}Enter the tag version of icn+dtn image (0.9[default]) :${normal}" tag_version
+read -p "${bold}Enter the base name of icn-dtn image(icn-dtn-base[default]) :${normal}" image_name
+read -p "${bold}Enter the version of icn-dtn (0.6.5[default]) :${normal}" ndn_version
+read -p "${bold}Enter the tag version of icn-dtn image (0.9[default]) :${normal}" tag_version
 read -p "${bold}Support Web-VNC in continer?(y or n[default]) :${normal}" is_vnc
 
 if [[ -z $ndn_version ]]; then
@@ -18,7 +18,7 @@ if [[ -z $tag_version ]]; then
   tag_version='0.9'
 fi
 if [[ -z $image_name ]]; then
-  image_name='ndn-dtn-base'
+  image_name='icn-dtn-base'
 fi
 if [[ -z $is_vnc ]]; then
   is_vnc='n'
@@ -27,7 +27,7 @@ fi
 ####################################
 ## create default container image 
 ####################################
-echo "${bold}Create icn+dtn container image ($image_name-$ndn_version:$tag_version)${normal}"
+echo "${bold}Create icn-dtn container image ($image_name-$ndn_version:$tag_version)${normal}"
 echo "${bold}Deleate container image${normal}"
 docker rmi -f $image_name-$ndn_version:$tag_version
 #docker rmi -f 192.168.103.250:5000/$image_name-$ndn_version:$tag_version
@@ -44,7 +44,7 @@ docker images | grep $image_name-vnc
 ####################################
 if [[ $is_vnc == 'y' ]]; then
 
-echo "${bold}Create icn+dtn container image for web-vnc ($image_name-vnc-$ndn_version:$tag_version)${normal}"
+echo "${bold}Create icn-dtn container image for web-vnc ($image_name-vnc-$ndn_version:$tag_version)${normal}"
 
 ############
 # create vnc

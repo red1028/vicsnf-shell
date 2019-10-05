@@ -4,17 +4,17 @@ metadata:
   name: dongjak
   namespace: vicsnet
   annotations:
-    default_ip: "10.10.9.110"
+    default_ip: "10.10.9.10"
     k8s.v1.cni.cncf.io/networks: '[
       {"name": "kuryr-ndn-10", "namespace": "default", "ips": ["10.10.10.101"]},
-      {"name": "kuryr-ndn-20", "namespace": "default", "ips": ["10.10.20.110"]},
+      {"name": "kuryr-ndn-20", "namespace": "default", "ips": ["10.10.20.10"]},
       {"name": "kuryr-ndn-13", "namespace": "default", "ips": ["10.10.13.101"]},
       {"name": "kuryr-ndn-14", "namespace": "default", "ips": ["10.10.14.101"]}
     ]'
 spec:
   containers:
   - name: dongjak
-    image: 192.168.103.250:5000/ndn_dtn_base-0.6.5:0.9
+    image: 192.168.103.250:5000/icn-dtn-base-0.6.5:1.0
     workingDir: /root
     env:
     - name: LC_ALL
@@ -22,7 +22,7 @@ spec:
     - name: vICSNF_ALIAS
       value: 'dongjak'
     - name: vICSNF_MGMTIP
-      value: '127.0.0.1'
+      value: '127.10.10.1'
     - name: vICSNF_MGMTPORT
       value: '50051'
     - name: vICSNF_SITENAME
@@ -38,6 +38,12 @@ spec:
       value: 'korea\\/seoul#R1:korea\\/seoul\\/gangnam#R1:korea\\/seoul\\/dongjak\\/pf#R1:korea\\/seoul\\/dongjak\\/h#R1'
     - name: vICSNF_AD_PREFIXE
       value: 'korea\\/seoul\\/dongjak:korea\\/incidents\\/01\\/HT'
+    - name: vNLSR_LIFETIME
+      value: '60000'
+    - name: vNLSR_HELLOTIME
+      value: '40'
+    - name: vNLSR_FIRST_HELLOTIME
+      value: '10'
     - name: vICSNF_ENV_CHANGE
       value: 'NO'
     - name: vICSNF_IS_START
@@ -52,6 +58,6 @@ spec:
       value: '\\/nfd'
     securityContext:
       privileged: true
-    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; sleep 1d"]
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d"]
   nodeSelector:
     kubernetes.io/hostname: vicsnet-edge1

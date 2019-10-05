@@ -6,12 +6,12 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/networks: '[
       {"name": "kuryr-ndn-flat-13", "namespace": "default", "ips": ["192.168.13.103"]},
-      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.110"]}
+      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.10"]}
     ]'
 spec:
   containers:
   - name: dongjak-pu1
-    image: 192.168.103.250:5000/ndn_dtn_base_vnc-0.6.5:1.0
+    image: 192.168.103.250:5000/icn-dtn-base-vnc-0.6.5:1.0
     #args:
     #workingDir: /root
     env:
@@ -20,7 +20,7 @@ spec:
     - name: vICSNF_ALIAS
       value: 'dongjak-pu1'
     - name: vICSNF_MGMTIP
-      value: '127.0.0.1'
+      value: '127.10.10.1'
     - name: vICSNF_MGMTPORT
       value: '50051'
     - name: vICSNF_SITENAME
@@ -36,6 +36,12 @@ spec:
       value: 'korea\\/seoul\\/dongjak\\/pf#R1'
     - name: vICSNF_AD_PREFIXE
       value: 'korea\\/seoul\\/dongjak\\/police\\/unit1'
+    - name: vNLSR_LIFETIME
+      value: '60000'
+    - name: vNLSR_HELLOTIME
+      value: '40'
+    - name: vNLSR_FIRST_HELLOTIME
+      value: '10'
     - name: vICSNF_ENV_CHANGE
       value: 'NO'
     - name: vICSNF_IS_START
@@ -69,6 +75,6 @@ spec:
     securityContext:
       runAsUser: 0
       privileged: true
-    command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; /dockerstartup/vnc_startup.sh --wait;"]
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; /dockerstartup/vnc_startup.sh --wait;"]
   nodeSelector:
     kubernetes.io/hostname: vicsnet-mec1

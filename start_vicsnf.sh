@@ -131,9 +131,9 @@ done
 
 sed -i "s/\%neighbor_arry\%/$NEIGHBOR_ARRY/" $filename
 sed -i "s/\%prefix_array\%/$PREFIX_ARRAY/" $filename
-sed -i "s/\%sync_interest_lifetime%\/$NLSR_LIFETIME/" $filename
-sed -i "s/\%hello_interval%\/$NLSR_HELLOTIME/" $filename
-sed -i "s/\%first_hello_interval%\/$NLSR_FIRST_HELLOTIME/" $filename
+sed -i "s/\%sync_interest_lifetime\%/$NLSR_LIFETIME/" $filename
+sed -i "s/\%hello_interval\%/$NLSR_HELLOTIME/" $filename
+sed -i "s/\%first_hello_interval\%/$NLSR_FIRST_HELLOTIME/" $filename
 
 cp $filename $LOCAL_ETC_PATH/ndn/nlsr.conf
 

@@ -1,53 +1,56 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: dongjak-pu2
+  name: c-vnf
   namespace: vicsnet
   annotations:
+    default_ip: "10.10.9.221"
     k8s.v1.cni.cncf.io/networks: '[
-      {"name": "kuryr-ndn-flat-13", "namespace": "default", "ips": ["192.168.13.104"]},
-      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.111"]}
+      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.221"]}
     ]'
 spec:
   containers:
-  - name: dongjak-pu2
-    image: 192.168.103.250:5000/ndn_dtn_base_vnc-0.6.5:0.9
-    #args:
-    #workingDir: /root
+  - name: c-vnf
+    image: 192.168.103.250:5000/ndn_dtn_base_vnc-0.6.5:1.0
+    ## For vnc, it must be disabled
+    workingDir: /root
     env:
     - name: LC_ALL
       value: C.UTF-8
     - name: vICSNF_ALIAS
-      value: 'dongjak_pu2'
+      value: 'c-vnf'
     - name: vICSNF_MGMTIP
       value: '127.0.0.1'
     - name: vICSNF_MGMTPORT
       value: '50051'
     - name: vICSNF_SITENAME
-      value: 'korea\\/seoul\\/dongjak\\/pf\\/pu2'
+      value: 'c-vnf'
     - name: vICSNF_ROUTERNAME
       value: 'R1'
     - name: vICSNF_NEIGHBOR_HOSTNAME
-      value: 'dongjak_pf'
+      value: 'vm-vnf'
     - name: vICSNF_NEIGHBOR_IP
-      value: '192.168.13.102'
+      value: '192.168.100.222'
     - name: vICSNF_NEIGHBOR_SITE_ROUTE
       # SITE_NAME#ROUTE_NAME:N:N
-      value: 'korea\\/seoul\\/dongjak\\/pf#R1'
+      value: 'vm-vnf#R1'
     - name: vICSNF_AD_PREFIXE
-      value: 'korea\\/seoul\\/dongjak\\/police\\/unit2'
+      value: 'container\\/headquarter'
+    - name: vNLSR_LIFETIME
+      value: '60000'
+    - name: vNLSR_HELLOTIME
+      value: '40'
+    - name: vNLSR_FIRST_HELLOTIME
+      value: '10'
     - name: vICSNF_ENV_CHANGE
       value: 'NO'
     - name: vICSNF_IS_START
-      ## is nlsr daemon start
       value: 'YES'
     - name: vDTN_SUPPORT
-      value: 'NO'
+      value: 'YES'
     - name: vCONVERGENCE_INTERFACES
-      # lan0:lan1:lan2
       value: 'lan0'
     - name: vCONVERGENCE_LAYER
-      # tcp#eth1:tcp#eth2:tcp#eth3
       value: 'tcp#eth1'
     - name: vDTN_DEFAULT_PREFIX
       value: '\\/nfd'
@@ -67,8 +70,9 @@ spec:
       initialDelaySeconds: 1
       timeoutSeconds: 1
     securityContext:
-      runAsUser: 0
       privileged: true
+      runAsUser: 0
+      #runAsGroup: 0
     command: ["/bin/bash", "-c", "service ssh restart; /root/start_vicsnf.sh; /dockerstartup/vnc_startup.sh --wait;"]
   nodeSelector:
-    kubernetes.io/hostname: vicsnet-mec1
+    kubernetes.io/hostname: vicsnet-edge1

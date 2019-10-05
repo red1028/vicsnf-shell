@@ -1,0 +1,12 @@
+#cloud-config
+runcmd:
+ - [ export, vICSNF_ALIAS='vm-vnf', vICSNF_MGMTIP='127.0.0.1', vICSNF_MGMTPORT='50051' ]
+ - [ export, vICSNF_SITENAME='vm-vnf', vICSNF_ROUTERNAME='R1' ]
+ - [ export, vICSNF_NEIGHBOR_HOSTNAME='c-vnf', vICSNF_NEIGHBOR_IP='192.168.100.221', vICSNF_NEIGHBOR_SITE_ROUTE='c-vnf#R1' ]
+ - [ export, vICSNF_AD_PREFIXE='vm\/headquarter' ]
+ - [ export, vNLSR_LIFETIME='60000', vNLSR_HELLOTIME='30', vNLSR_FIRST_HELLOTIME='10' ]
+ - [ export, vICSNF_ENV_CHANGE='NO', vICSNF_IS_START='YES', vDTN_SUPPORT='YES', vICSNF_IS_VM='YES' ]
+ - [ export, vCONVERGENCE_INTERFACES='lan0', vCONVERGENCE_LAYER='tcp#ens3', vDTN_DEFAULT_PREFIX='\/nfd', VNC_PW='vicsnf' ]
+ - [ ifdown, ens3 ]
+ - [ ifup, ens3 ]
+ - [ bash, -c, /root/start_vicsnf.sh ]

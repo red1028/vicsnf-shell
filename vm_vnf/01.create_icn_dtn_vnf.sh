@@ -6,15 +6,15 @@ normal=$(tput sgr0)
 ####################################
 ## input nfd name and manage network
 ####################################
-read -p "${bold}Enter the base name of icn+dtn image(icn_dtn_base[default]) :${normal}" image_name
-read -p "${bold}Enter the version of icn+dtn (0.6.5[default]) :${normal}" version
-read -p "${bold}Enter the management network for creating an icn+dtn image(public[default]) :${normal}" mgmt_net
+read -p "${bold}Enter the base name of icn-dtn image(icn-dtn-base[default]) :${normal}" image_name
+read -p "${bold}Enter the version of icn-dtn (0.6.5[default]) :${normal}" version
+read -p "${bold}Enter the management network for creating an icn-dtn image(public[default]) :${normal}" mgmt_net
 read -p "${bold}Are you sure you want to delete it?(y or n[default]) :${normal}" is_delete
 read -p "${bold}Support Web-VNC in VM?(y or n[default]) :${normal}" is_vnc
 
 
 if [[ -z $image_name ]]; then
-  image_name='icn_dtn_base'
+  image_name='icn-dtn-base'
 fi
 if [[ -z $version ]]; then
   version='0.6.5'
@@ -36,10 +36,12 @@ fi
 function nfd_nlsr_install()
 {
 ssh -o StrictHostKeyChecking=no root@$1 \
+export version=$version \
+export is_vnc=$is_vnc \
 '
 echo ""
 echo -e "\033[1mConnected to VM\033[0m"
-echo -e "\033[1mInstallation ICN+DTN libraries\033[0m"
+echo -e "\033[1mInstallation ICN-DTN libraries\033[0m"
 
 echo "" >> /etc/vim/vimrc
 echo "colorscheme ron"  >> /etc/vim/vimrc
@@ -49,7 +51,7 @@ echo "LS_COLORS=\$LS_COLORS:\"di=1;33:ln=36\"; export LS_COLORS" >> ~/.bashrc
 # change repository
 sed -i "s/nova\.clouds\.archive\.ubuntu\.com/ftp\.daumkakao\.com/g" /etc/apt/sources.list
 sed -i "s/security\.ubuntu\.com/ftp\.daumkakao\.com/g" /etc/apt/sources.list
-apt update
+apt update #&& apt -y dist-upgrade
 
 #############
 # Installing Packages for ndn-cxx and nfd Builds
@@ -133,7 +135,7 @@ ldconfig
 #############
 # build ndn
 cd ~/ndn_dtn_source/ndn-cxx-$version
-./waf clean && ./waf configure --with-examples
+./waf clean; ./waf configure --with-examples
 ./waf && ./waf install
 cp build/examples/{consumer,producer,consumer-with-timer} /usr/local/bin
 ldconfig
@@ -146,7 +148,7 @@ else
   curl -L https://github.com/cawka/websocketpp/archive/0.8.1-hotfix.tar.gz > websocketpp.tar.gz
 fi
 tar xf websocketpp.tar.gz -C websocketpp/ --strip 1
-./waf clean && ./waf configure
+./waf clean; ./waf configure
 ./waf && ./waf install
 sed -i "s/^sudo //" /usr/local/bin/nfd-start
 sed -i "s/\! sudo true/[ \"1\" == \"0\" ]/" /usr/local/bin/nfd-start
@@ -154,12 +156,12 @@ sed -i "s/sudo killall nfd/killall -9 nfd/" /usr/local/bin/nfd-stop
 
 ## ChronoSync build
 cd ~/ndn_dtn_source/ChronoSync
-./waf clean && ./waf configure
+./waf clean; ./waf configure
 ./waf && ./waf install
 ldconfig
 
 cd ~/ndn_dtn_source/PSync
-./waf clean && ./waf configure
+./waf clean; ./waf configure
 ./waf && ./waf install
 ldconfig
 
@@ -170,7 +172,7 @@ if [ "$version" == "0.6.5" ]; then
 else
   cd ~/ndn_dtn_source/NLSR-0.5.1
 fi
-./waf clean && ./waf configure
+./waf clean; ./waf configure
 ./waf && ./waf install
 
 #############
@@ -180,7 +182,7 @@ if [ "$version" == "0.6.5" ]; then
 else
   cd ~/ndn_dtn_source/ndn-tools-0.6.4
 fi
-./waf clean && ./waf configure
+./waf clean; ./waf configure
 ./waf && ./waf install
 
 #############
@@ -205,15 +207,88 @@ git clone https://github.com/red1028/nfd-grpc.git  ~/nfd-grpc
 
 
 ############
-# pyndn client for icn+dtn
+# pyndn client for icn-dtn
 ############
-if [ "$is_vnc" == "y" ]; then
+if [ "$is_vnc" == "y" ]; then 
+  export DISPLAY=:1
+  export VNC_PORT=5901
+  export NO_VNC_PORT=6901
+  export HOME=/headless
+  export STARTUPDIR=/headless/startup
+  export INST_SCRIPTS=/headless/install
+  export NO_VNC_HOME=/headless/noVNC
+  export VNC_COL_DEPTH=24
+  export VNC_RESOLUTION=1280x1024
+  export VNC_PW=vicsnf
+  export VNC_VIEW_ONLY=false
+  
+  echo "DISPLAY=:1" >> /etc/environment
+  echo "VNC_PORT=5901" >> /etc/environment
+  echo "NO_VNC_PORT=6901" >> /etc/environment
+  echo "HOME=/headless" >> /etc/environment
+  echo "STARTUPDIR=/headless/startup" >> /etc/environment
+  echo "INST_SCRIPTS=/headless/install" >> /etc/environment
+  echo "NO_VNC_HOME=/headless/noVNC" >> /etc/environment
+  echo "VNC_COL_DEPTH=24" >> /etc/environment
+  echo "VNC_RESOLUTION=1280x1024" >> /etc/environment
+  echo "VNC_PW=vicsnf" >> /etc/environment
+  echo "VNC_VIEW_ONLY=false" >> /etc/environment
+  
+  mkdir -p $INST_SCRIPTS
+  mkdir -p $NO_VNC_HOME
+  mkdir -p $STARTUPDIR
+
+  git clone https://github.com/ConSol/docker-headless-vnc-container $HOME/docker-headless-vnc-container
+ 
+  cd $HOME/docker-headless-vnc-container/src/common/xfce/.config
+  wget -Nc https://xubuntu.org/wp-content/uploads/2018/07/6e3e/xubuntu-xenial.png
+  sed -i "s/bg_sakuli.png/xubuntu-xenial.png/g" xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+  cd $HOME
+  
+  cp $HOME/docker-headless-vnc-container/src/common/install/*.sh $INST_SCRIPTS
+  cp $HOME/docker-headless-vnc-container/src/ubuntu/install/*.sh $INST_SCRIPTS
+  find $INST_SCRIPTS -name "*.sh" -exec chmod a+x {} +
+  
+  $INST_SCRIPTS/tools.sh
+  $INST_SCRIPTS/install_custom_fonts.sh
+  $INST_SCRIPTS/tigervnc.sh
+  $INST_SCRIPTS/no_vnc.sh
+  $INST_SCRIPTS/chrome.sh
+  $INST_SCRIPTS/xfce_ui.sh
+  
+  cp -r $HOME/docker-headless-vnc-container/src/common/xfce/. $HOME
+  
+  $INST_SCRIPTS/libnss_wrapper.sh
+  cp $HOME/docker-headless-vnc-container/src/common/scripts/* $STARTUPDIR
+  $INST_SCRIPTS/set_user_permission.sh /headless/startup /headless
+  
+  sed -i "s/hostname \-i/hostname \-I \| awk '\/ \/ \{print \$1\}'/g" $STARTUPDIR/vnc_startup.sh
+
+  # some more ls aliases for .bashrc
+  echo "alias ll='ls -alF'" >> $HOME/.bashrc
+  echo "alias la='ls -A'" >> $HOME/.bashrc
+  echo "alias l='ls -CF'" >> $HOME/.bashrc
+  echo "LS_COLORS=\$LS_COLORS:\"di=1;33:ln=36\"; export LS_COLORS" >> $HOME/.bashrc
+
+  
+crontab <<EOF
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+# m h  dom mon dow   command
+@reboot root /bin/sleep 30; export HOME=/headless; \$STARTUPDIR/vnc_startup.sh --wait
+EOF
+
+  pushd /root
   apt-get install -y software-properties-common
-  add-apt-repository ppa:kivy-team/kivy
+  add-apt-repository -y ppa:kivy-team/kivy
   apt-get install -y python-kivy
   apt-get install -y libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
   easy_install requests
-  git clone https://github.com/pearltran/py_chronochat_ui.git ~/py_chronochat_ui
+  git clone https://github.com/pearltran/py_chronochat_ui.git /root/py_chronochat_ui
+  popd
+  
+  apt -y autoremove
+  apt clean
 fi
 '
 }
@@ -223,10 +298,10 @@ fi
 ####################################
 ## check nfd snapshot image
 ####################################
-is_nfd_image=$(openstack image list | grep $image_name_$version | awk '/ / {print $4}')
+is_nfd_image=$(openstack image list | grep $image_name-$version | awk '/ / {print $4}')
 
 if [[ -n $is_nfd_image ]]; then
-  read -p "${bold}Already exists ICN+DTN image ($is_nfd_image). Are you sure you want to proceed(y or n[default])? :${normal}" yesorno
+  read -p "${bold}Already exists ICN-DTN image ($is_nfd_image). Are you sure you want to proceed(y or n[default])? :${normal}" yesorno
   if [[ -z $yesorno ]]; then
     yesorno='n'
   fi
@@ -242,13 +317,17 @@ if [ "$yesorno" = "y" -o "$yesorno" = "Y" ]; then
   uuid=${uuid:0:13}
   uuid=${uuid^^}
   #name=$name\_$uuid
-  name=$image_name\_$version
+  if [ "$is_vnc" == "y" ]; then
+    name=$image_name\-vnc\-$version
+  else
+    name=$image_name\-$version
+  fi
 
   ####################################
   ## Create empty VNF
   ####################################
   echo ""
-  echo "${bold}Create default ICN+DTN VNF ($name)${normal}"
+  echo "${bold}Create default ICN-DTN VNF ($name)${normal}"
   openstack server delete $name
   sleep 4
   openstack server create \
@@ -282,7 +361,7 @@ if [ "$yesorno" = "y" -o "$yesorno" = "Y" ]; then
   ## Connect VNF and NFD install process 
   ####################################
   echo ""
-  echo "${bold}Connection for ICN+DTN installation${normal}"
+  echo "${bold}Connection for ICN-DTN installation${normal}"
   mgmt_ip=$(openstack server list | grep $name | awk -F"public=" '{print $2}' | awk '{print $1}')
   for (( ; ; ))
   do
@@ -315,7 +394,7 @@ if [ "$yesorno" = "y" -o "$yesorno" = "Y" ]; then
   ## Reboot VNF status
   ####################################
   echo ""
-  echo "${bold}ICN+DTN library installation completed and VNF rebooting...${normal}"
+  echo "${bold}ICN-DTN library installation completed and VNF rebooting...${normal}"
   prev_status=""
   openstack server reboot $name
   for (( ; ; ))
@@ -335,7 +414,7 @@ if [ "$yesorno" = "y" -o "$yesorno" = "Y" ]; then
   ## Check create snapshot status
   ####################################
   echo ""
-  echo "${bold}Create default ICN+DTN VNF image ($name)${normal}"
+  echo "${bold}Create default ICN-DTN VNF image ($name)${normal}"
   prev_status=""
   openstack server image create $name --name $name
   for (( ; ; ))
