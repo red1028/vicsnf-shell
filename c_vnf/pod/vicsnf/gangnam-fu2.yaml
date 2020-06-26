@@ -39,7 +39,7 @@ spec:
     - name: vNLSR_LIFETIME
       value: '60000'
     - name: vNLSR_HELLOTIME
-      value: '40'
+      value: '60'
     - name: vNLSR_FIRST_HELLOTIME
       value: '10'
     - name: vICSNF_ENV_CHANGE

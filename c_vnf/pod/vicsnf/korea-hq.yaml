@@ -7,6 +7,7 @@ metadata:
     default_ip: "10.10.9.107"
     k8s.v1.cni.cncf.io/networks: '[
       {"name": "kuryr-ndn-97", "namespace": "default", "ips": ["10.10.97.98"]},
+      {"name": "kuryr-ndn-11", "namespace": "default", "ips": ["10.10.11.98"]},
       {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.199"]}
     ]'
 spec:
@@ -29,18 +30,18 @@ spec:
     - name: vICSNF_ROUTERNAME
       value: 'R1'
     - name: vICSNF_NEIGHBOR_HOSTNAME
-      value: 'korea'
+      value: 'korea:gangnam'
     - name: vICSNF_NEIGHBOR_IP
-      value: '10.10.97.99'
+      value: '10.10.97.99:10.10.11.101'
     - name: vICSNF_NEIGHBOR_SITE_ROUTE
       # SITE_NAME#ROUTE_NAME:N:N
-      value: 'korea#R1'
+      value: 'korea#R1:korea\\/seoul\\/gangnam#R1'
     - name: vICSNF_AD_PREFIXE
       value: 'korea\\/headquarter'
     - name: vNLSR_LIFETIME
       value: '60000'
     - name: vNLSR_HELLOTIME
-      value: '40'
+      value: '60'
     - name: vNLSR_FIRST_HELLOTIME
       value: '10'
     - name: vICSNF_ENV_CHANGE
@@ -76,4 +77,4 @@ spec:
       #runAsGroup: 0
     command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; /dockerstartup/vnc_startup.sh --wait;"]
   nodeSelector:
-    kubernetes.io/hostname: vicsnet-core2
+    kubernetes.io/hostname: vicsnet-core1

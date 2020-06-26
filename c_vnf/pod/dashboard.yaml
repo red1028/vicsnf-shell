@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dashboard
+  namespace: vicsnet
+  annotations:
+    default_ip: "10.10.9.99"
+    k8s.v1.cni.cncf.io/networks: '[
+      {"name": "public-subnet", "namespace": "default", "ips": ["192.168.100.99"]}
+    ]'
+spec:
+  containers:
+  - name: dashboard
+    #image: ubuntu:18.04
+    image: 192.168.103.250:5000/dashboard:1.0
+    ## For vnc, it must be disabled
+    workingDir: /root
+    env:
+    - name: LC_ALL
+      value: C.UTF-8
+    #- name: vICSNF_ALIAS
+    #  value: 'dashboard'
+    #securityContext:
+    #  capabilities:
+    #    add: ["CAP_SYS_MODULE"]
+    #  privileged: true
+    #command: ["/bin/bash", "-c", "sleep 365d"]
+    command: ["/bin/bash", "-c", "service mysql restart; service apache2 restart; sleep 365d;"]
+    volumeMounts:
+      - name: dashboard-src
+        mountPath: /var/www/dashboard
+  volumes:
+    - name: dashboard-src
+      hostPath:
+        path: /root/dashboard
+  nodeSelector:
+    kubernetes.io/hostname: vicsnet-edge1

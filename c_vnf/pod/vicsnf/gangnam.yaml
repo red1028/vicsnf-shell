@@ -30,18 +30,18 @@ spec:
     - name: vICSNF_ROUTERNAME
       value: 'R1'
     - name: vICSNF_NEIGHBOR_HOSTNAME
-      value: 'seoul:dongjak:gangnam-pf:gangnam-h'
+      value: 'seoul:dongjak:gangnam-pf:gangnam-h:korea-hq'
     - name: vICSNF_NEIGHBOR_IP
-      value: '10.10.11.100:10.10.20.10:10.10.15.102:10.10.16.102'
+      value: '10.10.11.100:10.10.20.10:10.10.15.102:10.10.16.102:10.10.11.98'
     - name: vICSNF_NEIGHBOR_SITE_ROUTE
       # SITE_NAME#ROUTE_NAME:N:N
-      value: 'korea\\/seoul#R1:korea\\/seoul\\/dongjak#R1:korea\\/seoul\\/gangnam\\/pf#R1:korea\\/seoul\\/gangnam\\/h#R1'
+      value: 'korea\\/seoul#R1:korea\\/seoul\\/dongjak#R1:korea\\/seoul\\/gangnam\\/pf#R1:korea\\/seoul\\/gangnam\\/h#R1:korea\\/hq#R1'
     - name: vICSNF_AD_PREFIXE
       value: 'korea\\/seoul\\/gangnam:korea\\/incidents\\/01\\/PT:korea\\/incidents\\/01\\/FT'
     - name: vNLSR_LIFETIME
       value: '60000'
     - name: vNLSR_HELLOTIME
-      value: '40'
+      value: '60'
     - name: vNLSR_FIRST_HELLOTIME
       value: '10'
     - name: vICSNF_ENV_CHANGE
@@ -58,6 +58,6 @@ spec:
       value: '\\/nfd'
     securityContext:
       privileged: true
-    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d"]
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 30d"]
   nodeSelector:
     kubernetes.io/hostname: vicsnet-edge2

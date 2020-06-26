@@ -139,7 +139,7 @@ cp $filename $LOCAL_ETC_PATH/ndn/nlsr.conf
 
 
 DTN_CONF=""
-if [ $DTN_SUPPORT == 'YES' ]; then
+if [[ $DTN_SUPPORT == 'YES' ]]; then
 DTN_CONF="dtn\n\
   {\n\
     host localhost\n\
@@ -281,18 +281,21 @@ source $env_name
 
 if [ "$1" == 'add_tcp' ]; then
   add_tcp_face $env_name
+elif [ "$1" == 'grpc_nlsr' ]; then
+  apply_to_ndn $env_name
+  stop_nlsr; start_nlsr;
 else
   # default command
   apply_to_ndn $env_name
   stop_dtnd; stop_nlsr; stop_nfd; stop_grpc_agent
  
-  if [ $DTN_SUPPORT  == 'YES' ]; then
+  if [[ $DTN_SUPPORT  == 'YES' ]]; then
 	apply_to_dtn $env_name
 	start_dtnd;
   fi
 
   start_nfd
-  if [ $IS_START == 'YES' ]; then
+  if [[ $IS_START == 'YES' ]]; then
       start_nlsr; start_grpc_agent
   fi
   add_udp_face $env_name

@@ -4,7 +4,7 @@ metadata:
   name: dongjak
   namespace: vicsnet
   annotations:
-    default_ip: "10.10.9.10"
+    default_ip: "10.10.9.110"
     k8s.v1.cni.cncf.io/networks: '[
       {"name": "kuryr-ndn-10", "namespace": "default", "ips": ["10.10.10.101"]},
       {"name": "kuryr-ndn-20", "namespace": "default", "ips": ["10.10.20.10"]},
@@ -41,7 +41,7 @@ spec:
     - name: vNLSR_LIFETIME
       value: '60000'
     - name: vNLSR_HELLOTIME
-      value: '40'
+      value: '60'
     - name: vNLSR_FIRST_HELLOTIME
       value: '10'
     - name: vICSNF_ENV_CHANGE
@@ -58,6 +58,6 @@ spec:
       value: '\\/nfd'
     securityContext:
       privileged: true
-    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d"]
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 30d"]
   nodeSelector:
     kubernetes.io/hostname: vicsnet-edge1

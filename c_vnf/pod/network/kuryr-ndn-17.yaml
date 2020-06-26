@@ -3,7 +3,7 @@ kind: NetworkAttachmentDefinition
 metadata:
   name: kuryr-ndn-17
   annotations:
-    openstack.org/kuryr-config: '{"subnetId": "bce5e0bb-4e81-4450-95f8-aa4cb445822f"}'
+    openstack.org/kuryr-config: '{"subnetId": "f12f0805-1f9e-4763-a181-6fb6ef50ff6d"}'
 spec: 
   config: '{
     "cniVersion": "0.3.1",

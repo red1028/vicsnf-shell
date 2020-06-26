@@ -40,7 +40,7 @@ spec:
     - name: vNLSR_LIFETIME
       value: '60000'
     - name: vNLSR_HELLOTIME
-      value: '40'
+      value: '60'
     - name: vNLSR_FIRST_HELLOTIME
       value: '10'
     - name: vICSNF_ENV_CHANGE
@@ -57,6 +57,6 @@ spec:
       value: '\\/nfd'
     securityContext:
       privileged: true
-    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 1d"]
+    command: ["/bin/bash", "-c", "/root/start_vicsnf.sh; sleep 30d"]
   nodeSelector:
     kubernetes.io/hostname: vicsnet-mec2

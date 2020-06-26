@@ -52,80 +52,86 @@ if [ "$is_process" = "y" -o "$is_process" = "Y" ]; then
         c_vfn_delete='n'
     fi
 
-for cnt in $(seq 1 $c_vfn_testing)
-do
-    vnf_total_cnt=0
-    vnf_list_str=""
-    vnf_create_str="kubectl create"
-    vnf_delete_str=""
-    for vnf_name in ${c_vnf_names[@]}
+    for cnt in $(seq 1 $c_vfn_testing)
     do
-      is_c_vnf=$(kubectl get pods --all-namespaces | grep -o $vnf_name | grep -v NAME | wc -l)
-      if [ $is_c_vnf -gt 0 ]; then
-        vnf_delete_str="$vnf_delete_str $vnf_name"
-      fi    
-      vnf_total_cnt=$((vnf_total_cnt + 1))
-      vnf_list_str="$vnf_list_str $vnf_name"
-      vnf_create_str="$vnf_create_str -f $vnf_name.yaml"
-    done
-       
-    if [ "$vnf_delete_str" != "" ]; then
-      kubectl -n vicsnet delete pod $vnf_delete_str
-      sleep 20
-    fi
-    
-    if [ $c_vfn_delete == 'y' ]; then
-      echo "${bold}C-VNF deletion has been completed.${normal}"
-      exit 0
-    fi
-  
-    if [ "$vnf_list_str" == "" ]; then
-      echo "${bold}There is no vnfd for the container.${normal}"
-      exit 0
-    fi
-     
-    sleep 1
-    echo ""
-    echo "${bold} == Create ${c_vnf_names[@]} ICN+DTM C-VNF == ${normal}"
-    #echo $vnf_create_str
-    $vnf_create_str
-    sleep 2
-    start_time="$(date -u +%s)"
-    
-    for i in {1..500}
-    do
-      #is_running_cnt=$(kubectl -n vicsnet get pods $vnf_list_str | grep -o Running | wc -l)
-      is_running_cnt=$(kubectl -n vicsnet get pods ${c_vnf_names[@]} | grep -v 'NAME' | grep -o Running | wc -l)
-      end_time="$(date -u +%s)"
-      elapsed="$(($end_time-$start_time))"
-    
-      if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
-        echo "The ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
-        break;
+      vnf_total_cnt=0
+      vnf_list_str=""
+      vnf_create_str="kubectl create"
+      vnf_delete_str=""
+      for vnf_name in ${c_vnf_names[@]}
+      do
+        is_c_vnf=$(kubectl get pods --all-namespaces | grep -o $vnf_name | grep -v NAME | wc -l)
+        if [ $is_c_vnf -gt 0 ]; then
+          vnf_delete_str="$vnf_delete_str $vnf_name"
+        fi    
+        vnf_total_cnt=$((vnf_total_cnt + 1))
+        vnf_list_str="$vnf_list_str $vnf_name"
+        vnf_create_str="$vnf_create_str -f $vnf_name.yaml"
+      done
+         
+      if [ "$vnf_delete_str" != "" ]; then
+        kubectl -n vicsnet delete pod $vnf_delete_str
+        sleep 20
+        for vnf_name in ${vnf_list_str[@]}
+        do
+          DEL_PORT=$(openstack port list | grep "vicsnet/$vnf_name" | awk '/ / {print $2}')
+          if [ "$DEL_PORT" != "" ]; then
+            openstack port delete ${DEL_PORT[@]}
+          fi
+        done
       fi
-    
-      echo "The ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
+      
+      if [ $c_vfn_delete == 'y' ]; then
+        echo "${bold}C-VNF deletion has been completed.${normal}"
+        exit 0
+      fi
+	  
+      if [ "$vnf_list_str" == "" ]; then
+        echo "${bold}There is no vnfd for the container.${normal}"
+        exit 0
+      fi
+       
       sleep 1
-    done
-
-    # Routing testing
-    # port error
-    # openstack port list | grep vicsnet | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
-    # openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
-    # openstack port delete $(openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2}')
-    if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
-    
+      echo ""
+      echo "${bold} == Create ${c_vnf_names[@]} ICN+DTM C-VNF == ${normal}"
+      #echo $vnf_create_str
+      $vnf_create_str
+      sleep 2
+      start_time="$(date -u +%s)"
+      
+      for i in {1..500}
+      do
+        #is_running_cnt=$(kubectl -n vicsnet get pods $vnf_list_str | grep -o Running | wc -l)
+        is_running_cnt=$(kubectl -n vicsnet get pods ${c_vnf_names[@]} | grep -v 'NAME' | grep -o Running | wc -l)
+        end_time="$(date -u +%s)"
+        elapsed="$(($end_time-$start_time))"
+      
+        if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
+          echo "The ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
+          break;
+        fi
+      
+        echo "The ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
+        sleep 1
+      done
+	  
+      # Routing testing
+      # port error
+      # openstack port list | grep vicsnet | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
+      # openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
+      # openstack port delete $(openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2}')
+      if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
         target_ndnping_prefix=$(kubectl -n vicsnet exec ${c_vnf_names[0]} -- bash -c 'grep prefix\ \/ndn\/korea /usr/local/etc/ndn/nlsr.conf | head -1 | awk "{print \$2}"')
-    echo ""
-    echo "${bold}Start routing test (${c_vnf_names[0]} to ${c_vnf_names[-1]})${normal}"
+        echo ""
+        echo "${bold}Start routing test (${c_vnf_names[0]} to ${c_vnf_names[-1]})${normal}"
         start_time="$(date -u +%s)"
         
-    ## start ndnping server
+        ## start ndnping server
         kubectl -n vicsnet exec -it ${c_vnf_names[0]} \
-    env target_ndnping_prefix=$target_ndnping_prefix \
-    env start_vnf=${c_vnf_names[0]} \
-    env end_vnf=${c_vnf_names[-1]} \
-    -- /bin/bash -c \
+          env target_ndnping_prefix=$target_ndnping_prefix \
+          env start_vnf=${c_vnf_names[0]} \
+          env end_vnf=${c_vnf_names[-1]} \
+          -- /bin/bash -c \
 '
 ndnping_prefix="$target_ndnping_prefix/ping"
 cd /root
@@ -159,10 +165,10 @@ done
 '
         echo ""
         kubectl -n vicsnet exec -it ${c_vnf_names[-1]} \
-    env target_ndnping_prefix=$target_ndnping_prefix \
-    env start_vnf=${c_vnf_names[0]} \
-    env end_vnf=${c_vnf_names[-1]} \
-        -- /bin/bash -c \
+          env target_ndnping_prefix=$target_ndnping_prefix \
+          env start_vnf=${c_vnf_names[0]} \
+          env end_vnf=${c_vnf_names[-1]} \
+          -- /bin/bash -c \
 '
 cd /root
 ndnping_prefix="$target_ndnping_prefix/ping"
@@ -182,8 +188,8 @@ do
   sleep 1
 done # in {1..100}
 '
-    end_time="$(date -u +%s)"
-    r_elapsed="$(($end_time+3-$start_time))"
+        end_time="$(date -u +%s)"
+        r_elapsed="$(($end_time+3-$start_time))"
         kubectl -n vicsnet exec -it ${c_vnf_names[0]} -- /bin/bash -c \
 '
 pid=$(ps -ef | grep ndnpingserver | grep -v grep | awk "{ print \$2 }")
@@ -191,12 +197,12 @@ if [ "$pid" != "" ]; then
   kill -9 $pid
 fi
 '
-    fi # Routing testing
+      fi # Routing testing
   
-    echo ""
-    echo "${bold}The ICN+DTN CVNF creation and routing time : $elapsed(s), $r_elapsed(s)${normal}"
-    ##kubectl -n vicsnet get pods
-done # for cnt in $(seq 1 $c_vfn_testing)
+      echo ""
+      echo "${bold}The ICN+DTN CVNF creation and routing time : $elapsed(s), $r_elapsed(s)${normal}"
+      ##kubectl -n vicsnet get pods
+    done # for cnt in $(seq 1 $c_vfn_testing)
 
   elif [ "$c_vfn_name" == 'all' ]; then
     read -p "${bold}Do you want to proceed with deletion only?(y or n[default]) :${normal}" c_vfn_delete
@@ -204,83 +210,90 @@ done # for cnt in $(seq 1 $c_vfn_testing)
       c_vfn_delete='n'
     fi
 
-for cnt in $(seq 1 $c_vfn_testing)
-do
-    vnf_total_cnt=0
-    vnf_list_str=""
-    vnf_create_str="kubectl create"
-    vnf_delete_str=""
-    for vnf_name in ${file_array[@]}
+    for cnt in $(seq 1 $c_vfn_testing)
     do
+      vnf_total_cnt=0
+      vnf_list_str=""
+      vnf_create_str="kubectl create"
+      vnf_delete_str=""
+      for vnf_name in ${file_array[@]}
+      do
         #if [ "$vnf_name" != "vnf-initiation" ] && [[ ! "$vnf_name" =~ "-mule" ]]; then
         if [[ "$vnf_name" != "vnf-initiation" ]] && [[ "$vnf_name" != *"-mule" ]] && [[ "$vnf_name" != *"-route" ]]; then
-            is_c_vnf=$(kubectl get pods --all-namespaces | grep -oE "vicsnet.*$vnf_name" | grep -vE '*-initiation|*-mule' | wc -l)
-            if [ $is_c_vnf -gt 0 ]; then
-                vnf_delete_str="$vnf_delete_str $vnf_name"
-            fi    
+          is_c_vnf=$(kubectl get pods --all-namespaces | grep -oE "vicsnet.*$vnf_name" | grep -vE '*-initiation|*-mule' | wc -l)
+          if [ $is_c_vnf -gt 0 ]; then
+            vnf_delete_str="$vnf_delete_str $vnf_name"
+          fi    
           vnf_total_cnt=$((vnf_total_cnt + 1))
-            vnf_list_str="$vnf_list_str $vnf_name"
-            vnf_create_str="$vnf_create_str -f $vnf_name.yaml"
+          vnf_list_str="$vnf_list_str $vnf_name"
+          vnf_create_str="$vnf_create_str -f $vnf_name.yaml"
         fi
-    done
-       
-    if [ "$vnf_delete_str" != "" ]; then
-      kubectl -n vicsnet delete pod $vnf_delete_str
-      #for i in {1..100}
-      #do
-      #  sleep 1
-      #  is_c_vnf=$(kubectl get pods --all-namespaces | grep -oE "vicsnet.*$vnf_name" | grep -vE '*-initiation|*-mule' | wc -l) 
-      #  if [ $is_c_vnf -eq 0 ]; then
-      #    break
-      #  fi
-      #done
-      sleep 20
-    fi
-    
-    if [ $c_vfn_delete == 'y' ]; then
-      echo "${bold}C-VNF deletion has been completed.${normal}"
-      exit 0
-    fi
-  
-    if [ "$vnf_list_str" == "" ]; then
-      echo "${bold}There is no vnfd for the container.${normal}"
-      exit 0
-    fi
-     
-    sleep 1
-    echo ""
-    echo "${bold} == Create all ICN+DTM C-VNF == ${normal}"
-    #echo $vnf_create_str
-    $vnf_create_str
-    sleep 2
-    start_time="$(date -u +%s)"
-     
-    for i in {1..500}
-    do
-      #is_running_cnt=$(kubectl -n vicsnet get pods $vnf_list_str | grep -o Running | wc -l)
-      is_running_cnt=$(kubectl -n vicsnet get pods | grep -vE 'vnf-initiation|-mule' | grep -o Running | wc -l)
-      end_time="$(date -u +%s)"
-      elapsed="$(($end_time+3-$start_time))"
-    
-      if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
-        echo "The all ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
-        break;
+      done
+           
+      if [ "$vnf_delete_str" != "" ]; then
+        kubectl -n vicsnet delete pod $vnf_delete_str
+        #for i in {1..100}
+        #do
+        #  sleep 1
+        #  is_c_vnf=$(kubectl get pods --all-namespaces | grep -oE "vicsnet.*$vnf_name" | grep -vE '*-initiation|*-mule' | wc -l) 
+        #  if [ $is_c_vnf -eq 0 ]; then
+        #    break
+        #  fi
+        #done
+        sleep 20
+        for vnf_name in ${vnf_list_str[@]}
+        do
+          DEL_PORT=$(openstack port list | grep "vicsnet/$vnf_name" | awk '/ / {print $2}')
+    	  if [ "$DEL_PORT" != "" ]; then
+            openstack port delete ${DEL_PORT[@]}
+    	  fi
+        done
       fi
-    
-      echo "The all ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
+      
+      if [ $c_vfn_delete == 'y' ]; then
+        echo "${bold}C-VNF deletion has been completed.${normal}"
+        exit 0
+      fi
+      
+      if [ "$vnf_list_str" == "" ]; then
+        echo "${bold}There is no vnfd for the container.${normal}"
+        exit 0
+      fi
+       
       sleep 1
-    done
-
-    # Routing testing
-    # port error
-    # openstack port list | grep vicsnet | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
-    # openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
-    # openstack port delete $(openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2}')
-    if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
+      echo ""
+      echo "${bold} == Create all ICN+DTM C-VNF == ${normal}"
+      #echo $vnf_create_str
+      $vnf_create_str
+      sleep 2
+      start_time="$(date -u +%s)"
+       
+      for i in {1..500}
+      do
+        #is_running_cnt=$(kubectl -n vicsnet get pods $vnf_list_str | grep -o Running | wc -l)
+        is_running_cnt=$(kubectl -n vicsnet get pods | grep -vE 'vnf-initiation|-mule|dashboard' | grep -o Running | wc -l)
+        end_time="$(date -u +%s)"
+        elapsed="$(($end_time+3-$start_time))"
+      
+        if [[ "$vnf_total_cnt" -eq "$is_running_cnt" ]]; then
+          echo "The all ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
+          break;
+        fi
+      
+        echo "The all ICN+DTN CVNF(total_vnf: $vnf_total_cnt, running_vnf: $is_running_cnt) elapsed time : $elapsed(s)"
+        sleep 1
+      done
+	  
+      # Routing testing
+      # port error
+      # openstack port list | grep vicsnet | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
+      # openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2,$4,$6,$8,$11}'
+      # openstack port delete $(openstack port list | grep 'vicsnet/' | grep DOWN | awk '/ / {print $2}')
+      if [[ "$vnf_total_cnt" -eq "$xis_running_cnt" ]]; then
         echo ""
         echo "${bold}Start routing test (dongjak-hu1 to seongnam-hu1)${normal}"
         start_time="$(date -u +%s)"
-    ## start ndnping server
+        ## start ndnping server
         kubectl -n vicsnet exec -it seongnam-hu1 -- /bin/bash -c \
 '
 ndnping_prefix="/ndn/korea/gyeonggi/seongnam/hospital/unit1/ping"
@@ -334,8 +347,8 @@ do
   sleep 1
 done # in {1..100}
 '
-    end_time="$(date -u +%s)"
-    r_elapsed="$(($end_time+3-$start_time))"        
+        end_time="$(date -u +%s)"
+        r_elapsed="$(($end_time+3-$start_time))"        
         kubectl -n vicsnet exec -it seongnam-hu1 -- /bin/bash -c \
 '
 pid=$(ps -ef | grep ndnpingserver | grep -v grep | awk "{ print \$2 }")
@@ -343,17 +356,17 @@ if [ "$pid" != "" ]; then
   kill -9 $pid
 fi
 '
-    fi # Routing testing
+      fi # Routing testing
 
   
-    echo ""
-    echo "${bold}The all ICN+DTN CVNF($c_vfn_name) creation and routing time : $elapsed(s), $r_elapsed(s)${normal}"
-    #kubectl -n vicsnet get pods
-    #echo "$(kubectl -n vicsnet get pods $vnf_list_str)"
-done # for cnt in $(seq 1 $c_vfn_testing)
+      echo ""
+      echo "${bold}The all ICN+DTN CVNF($c_vfn_name) creation and routing time : $elapsed(s), $r_elapsed(s)${normal}"
+      #kubectl -n vicsnet get pods
+      #echo "$(kubectl -n vicsnet get pods $vnf_list_str)"
+    done # for cnt in $(seq 1 $c_vfn_testing)
   
-  else # if [ $c_vfn_name == 'all' ];
-  
+  else # if [ $c_vfn_name != 'all' ]  and if [ "${#c_vnf_names[@]}" -lt < 1 ] 
+       # vnf-initiation test or only one vnf create/delete test
     read -p "${bold}Do you want to proceed with deletion only?(y or n[default]) :${normal}" c_vfn_delete
     if [ -z $c_vfn_delete ]; then
         c_vfn_delete='n'
@@ -371,11 +384,17 @@ done # for cnt in $(seq 1 $c_vfn_testing)
       
       if [ $is_c_vnf -gt '0' ]; then
         kubectl -n vicsnet delete pod $c_vfn_name
+        sleep 2
+
+        DEL_PORT=$(openstack port list | grep "vicsnet/$c_vfn_name" | awk '/ / {print $2}')
+        if [ "$DEL_PORT" != "" ]; then
+          openstack port delete ${DEL_PORT[@]}
+    	fi
+
         if [ $c_vfn_delete == 'y' ]; then
           echo "${bold}C-VNF deletion has been completed.${normal}"
           exit 0
         fi
-          sleep 2
       fi
       
       echo ""

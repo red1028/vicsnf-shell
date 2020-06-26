@@ -21,6 +21,7 @@ kubectl -n vicsnet exec -it dongjak-h -- bash -c 'nfdc face create remote tcp4:/
 
 kubectl -n vicsnet exec -it gangnam -- bash -c 'nfdc face create remote tcp4://gangnam-pf persistency permanent'
 kubectl -n vicsnet exec -it gangnam -- bash -c 'nfdc face create remote tcp4://gangnam-h persistency permanent'
+#kubectl -n vicsnet exec -it gangnam -- bash -c 'nfdc face create remote tcp4://korea-hq persistency permanent'
 kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam-pu1 persistency permanent'
 kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam-pu2 persistency permanent'
 kubectl -n vicsnet exec -it gangnam-pf -- bash -c 'nfdc face create remote tcp4://gangnam-fu1 persistency permanent'
