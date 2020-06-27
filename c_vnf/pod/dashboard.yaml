@@ -21,10 +21,9 @@ spec:
     #- name: vICSNF_ALIAS
     #  value: 'dashboard'
     #securityContext:
+    #  privileged: true
     #  capabilities:
     #    add: ["CAP_SYS_MODULE"]
-    #  privileged: true
-    #command: ["/bin/bash", "-c", "sleep 365d"]
     command: ["/bin/bash", "-c", "service mysql restart; service apache2 restart; sleep 365d;"]
     volumeMounts:
       - name: dashboard-src
@@ -34,4 +33,4 @@ spec:
       hostPath:
         path: /root/dashboard
   nodeSelector:
-    kubernetes.io/hostname: vicsnet-edge1
+    kubernetes.io/hostname: vicsnet-core1
