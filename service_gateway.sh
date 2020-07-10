@@ -4,7 +4,7 @@ function start()
 {
   pid=`ps -aef | grep gatewayRouter | grep -v grep | wc -l`
   if [[ $pid -eq 0 ]]; then
-	python /root/wifi-kivyndnchat/gatewayRouter.py 2>&1 &
+	python /root/wifi-kivyndnchat/gatewayRouter.py -n /ndnchat/register 2>&1 &
 	sleep 2
     echo -e "\033[1m== Started gatewayRouter ==\033[0m"
   else
