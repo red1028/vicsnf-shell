@@ -262,6 +262,16 @@ function stop_dtnd()
   /root/service_dtnd.sh stop
 }
 
+function start_gateway()
+{
+  /root/service_gateway.sh start
+}
+function stop_gateway()
+{
+  /root/service_gateway.sh stop
+}
+
+
 
 env_name=''
 
@@ -287,7 +297,7 @@ elif [ "$1" == 'grpc_nlsr' ]; then
 else
   # default command
   apply_to_ndn $env_name
-  stop_dtnd; stop_nlsr; stop_nfd; stop_grpc_agent
+  stop_dtnd; stop_nlsr; stop_nfd; stop_grpc_agent; stop_gateway
  
   if [[ $DTN_SUPPORT  == 'YES' ]]; then
 	apply_to_dtn $env_name
@@ -296,7 +306,7 @@ else
 
   start_nfd
   if [[ $IS_START == 'YES' ]]; then
-      start_nlsr; start_grpc_agent
+      start_nlsr; start_grpc_agent; start_gateway
   fi
   add_udp_face $env_name
 fi
